@@ -16,17 +16,7 @@ public class Vendor
 
     private string NameFix(string name)
     {
-        Regex[] regex = new Regex[5];
-        regex[0] = new Regex(@"\[(\S*)\]");
-        regex[1] = new Regex(@"\((\S*)\)");
-        regex[2] = new Regex(@"Сигареты с фильтром\s*");
-        regex[3] = new Regex(@"Сиг\.\s*");
-        regex[4] = new Regex(@"");
-        foreach (var reg in regex)
-        {
-            name = reg.Replace(name, "");
-        }
-        return name;
+        return Regex.Replace(name, @"\[(\S*)\]\s*|\([^)]+\)\s*|Сигареты с фильтром\s*|Cигареты с фильтром\s*|Сиг\.\s*|\d+,\d+\s*руб\.+\s*|Кретек\s*|\d+,\d+\s*руб\.+\s*|(\.*\,*\s*MT)\s*|""|Сиг\S*\s*", "");
     }
 
     public int GetLenght() { return _products.Count; }
