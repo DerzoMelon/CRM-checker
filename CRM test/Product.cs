@@ -23,7 +23,7 @@ public class Product
 
     public void Ceiling()
     {
-        _amount = (_amount + _inPack) / _inPack;
+        _amount = _amount / _inPack + (_amount % _inPack > 4?  1 : 0);
     }
     public void setName(string name) { this._name = name; }
 
