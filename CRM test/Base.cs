@@ -8,22 +8,8 @@ using Aspose.Cells;
 
 public class Base
 {
-    private Dictionary<string, Product> _shop = new Dictionary<string, Product>();
-
-    private string NameFix(string name)
-    {
-        Regex[] regex = new Regex[5];
-        regex[0] = new Regex(@"\[(\S*)\]");
-        regex[1] = new Regex(@"\((\S*)\)");
-        regex[2] = new Regex(@"Сигареты с фильтром\s*");
-        regex[3] = new Regex(@"Сиг\.\s*");
-        regex[4] = new Regex(@"");
-        foreach (var reg in regex)
-        {
-            name = reg.Replace(name, "");
-        }
-        return name;
-    }
+    private Dictionary<string, Vendor> _vendors = new Dictionary<string, Vendor>();
+    private Dictionary<string, Product> _productsInShop = new Dictionary<string, Product>();
 
     public void Open_Base(string Path)
     {
@@ -32,15 +18,15 @@ public class Base
         int rows = ws.Cells.MaxDataRow + 1;
         for (int i = 0; i < rows; i++)
         {
-            if (!_shop.ContainsKey(ws.Cells[i, 0].Value.ToString()))
+            if (!_vendors.ContainsKey(ws.Cells[i, 4].Value.ToString()))
+            {
+                Vendor _new = new Vendor(ws.Cells[i, 4].Value.ToString());
+                _vendors.Add(ws.Cells[i, 4].Value.ToString(), _new);               
+            }
+            if (!_vendors[ws.Cells[i, 4].Value.ToString()].IsContains(ws.Cells[i, 4].Value.ToString()))
             {
                 Product _new = new Product(ws.Cells[i, 0].Value.ToString(), Int32.Parse(ws.Cells[i, 1].Value.ToString()), Int32.Parse(ws.Cells[i, 3].Value.ToString()));
-                _shop.Add(ws.Cells[i, 0].Value.ToString(), _new);
-            }
-            else
-            {
-                // Product _new = new Product(ws.Cells[i, 6].Value.ToString() + "${i}", Int32.Parse(ws.Cells[i, 29].Value.ToString()));
-                //  _shop.Add(ws.Cells[i, 6].Value.ToString(), _new);
+                _vendors[ws.Cells[i, 4].Value.ToString()].Add(ws.Cells[i, 0].Value.ToString(), _new);
             }
         }
     }
@@ -52,15 +38,10 @@ public class Base
         int rows = ws.Cells.MaxDataRow + 1;
         for (int i = 1; i < rows; i++)
         {
-            if (!_shop.ContainsKey(ws.Cells[i, 6].Value.ToString()))
+            if (!_productsInShop.ContainsKey(ws.Cells[i, 6].Value.ToString()))
             {
                 Product _new = new Product(ws.Cells[i, 6].Value.ToString(), Int32.Parse(ws.Cells[i, 29].Value.ToString()));
-                _shop.Add(ws.Cells[i, 6].Value.ToString(), _new);
-            }
-            else
-            {
-                // Product _new = new Product(ws.Cells[i, 6].Value.ToString() + "${i}", Int32.Parse(ws.Cells[i, 29].Value.ToString()));
-                //  _shop.Add(ws.Cells[i, 6].Value.ToString(), _new);
+                _productsInShop.Add(ws.Cells[i, 6].Value.ToString(), _new);
             }
         }
     }
@@ -69,19 +50,34 @@ public class Base
     { 
        
     }
-    private Product GetProduct(string key)
+
+    public String[] GetVendors()
     {
-        return _shop[key];
-    }
-    public void print() 
-    {
-        foreach (var item in _shop)
+        string[] names = new string[_vendors.Count()];
+        int i = 0;
+        foreach (var vendor in _vendors)
         {
-            item.Value.print();
+            names[i] = vendor.Value.GetName();
+            ++i;
         }
+        return names;
     }
 
-    public async void compare(Base base_shop)
+    public Vendor GetVendor(string vendorName)
+    {
+        return _vendors[vendorName];
+    }
+    private Product GetProduct(string vendor, string key)
+    {
+        return _vendors[vendor].GetProduct(key);
+    }
+
+    public void print(string vendor)
+    {
+        _vendors[vendor].print();
+    }
+
+   /* public async void compare(Base base_shop)
     {
         Dictionary<string, Product> res = new Dictionary<string, Product>();
         foreach(var item in _shop) 
@@ -99,6 +95,28 @@ public class Base
             {
                 await writer.WriteAsync(item.Value.printIn() + "\n");
             }
+        }
+    }
+    */
+    private void compare(Vendor vendor)
+    {
+        Vendor res = _vendors[vendor.GetName()].Compare(vendor);
+        res.PrintOut();
+    }
+
+    public void MakeOrder()
+    {
+        foreach (var vendor in _vendors)
+        {
+            Vendor res = new Vendor(vendor.Key);
+            foreach (var product in _productsInShop)
+            {
+                if (vendor.Value.IsContains(product.Key))
+                {
+                    res.Add(product.Key, product.Value);
+                }
+            }
+            compare(res);
         }
     }
 }
