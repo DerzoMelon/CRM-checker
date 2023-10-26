@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-class Product
+public class Product
 {
     private string _name;
     private int _amount;
